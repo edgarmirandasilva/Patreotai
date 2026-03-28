@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel de Controlo da Nação — Portugal</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
-  <!-- Main JS (loaded after Chart.js) -->
+  <!-- Leaflet JS (loaded before main.js) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPaI=" crossorigin="" defer></script>
+  <!-- Main JS (loaded after Chart.js + Leaflet) -->
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 </head>
 <body>
@@ -255,6 +259,37 @@
             <canvas id="chart-rates" aria-label="Gráfico de natalidade e mortalidade"></canvas>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: MAPA INTERATIVO                              -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-map-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">🌍</div>
+        <h2 id="sec-map-title" class="section-title" style="color:var(--cyan)">Mapa Interativo de Portugal</h2>
+        <div class="section-line"></div>
+        <span class="section-badge" style="border-color:var(--cyan);color:var(--cyan)">OSM</span>
+      </div>
+
+      <div class="map-wrap">
+        <!-- Layer toggle controls -->
+        <div class="map-controls" role="toolbar" aria-label="Selecionar camada de dados">
+          <span class="map-controls-label">CAMADA:</span>
+          <div class="map-layer-buttons">
+            <button class="map-layer-btn active" data-layer="population" aria-pressed="true">População</button>
+            <button class="map-layer-btn" data-layer="density" aria-pressed="false">Densidade</button>
+            <button class="map-layer-btn" data-layer="unemployment" aria-pressed="false">Desemprego</button>
+            <button class="map-layer-btn" data-layer="gdp" aria-pressed="false">PIB pc</button>
+          </div>
+        </div>
+
+        <!-- Map container -->
+        <div id="portugal-map" aria-label="Mapa interativo de Portugal com dados regionais"></div>
+
+        <!-- Legend -->
+        <div class="map-legend" id="map-legend" aria-label="Legenda do mapa"></div>
       </div>
     </section>
 

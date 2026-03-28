@@ -160,6 +160,40 @@ def create_app(config: dict | None = None) -> Flask:
         rows = DataSource.query.filter_by(enabled=True).all()
         return jsonify([r.to_dict() for r in rows])
 
+    # --- Map data --------------------------------------------------------
+
+    @app.route("/api/map-data")
+    def api_map_data():
+        """Regional data enriched with geographic coordinates for the interactive map."""
+        # Geographic centres of Portugal's NUTs II regions
+        REGION_GEO = {
+            "PT11": {"lat": 41.55, "lng": -7.99},
+            "PT16": {"lat": 40.20, "lng": -7.88},
+            "PT17": {"lat": 38.72, "lng": -9.14},
+            "PT18": {"lat": 38.00, "lng": -7.80},
+            "PT15": {"lat": 37.10, "lng": -8.10},
+            "PT20": {"lat": 37.74, "lng": -25.67},
+            "PT30": {"lat": 32.75, "lng": -16.90},
+        }
+        year = request.args.get("year", type=int)
+        query = RegionalData.query.order_by(
+            RegionalData.year.desc(), RegionalData.region_name.asc()
+        )
+        if year:
+            query = query.filter_by(year=year)
+        rows = query.all()
+        if not year and rows:
+            latest_year = rows[0].year
+            rows = [r for r in rows if r.year == latest_year]
+        result = []
+        for r in rows:
+            d = r.to_dict()
+            geo = REGION_GEO.get(r.region_code, {})
+            d["lat"] = geo.get("lat")
+            d["lng"] = geo.get("lng")
+            result.append(d)
+        return jsonify(result)
+
     return app
 
 

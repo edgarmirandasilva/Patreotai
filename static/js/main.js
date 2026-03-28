@@ -209,6 +209,198 @@ function setAgeBars(a, b, c) {
 }
 
 // ---------------------------------------------------------------------------
+// Interactive Map (Leaflet + OpenStreetMap)
+// ---------------------------------------------------------------------------
+let _map = null;
+let _mapLayer = 'population';
+let _mapData = [];
+
+/** Colour ramp from low (cold) to high (hot) in cyberpunk palette */
+function mapColour(ratio) {
+  // 0 → cyan  0.5 → orange  1 → red
+  const stops = [
+    [0,   0x00, 0xd4, 0xff],  // cyan
+    [0.5, 0xff, 0x6b, 0x35],  // orange
+    [1.0, 0xff, 0x2d, 0x55],  // red
+  ];
+  let lo = stops[0], hi = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (ratio >= stops[i][0] && ratio <= stops[i + 1][0]) {
+      lo = stops[i];
+      hi = stops[i + 1];
+      break;
+    }
+  }
+  const t = hi[0] === lo[0] ? 0 : (ratio - lo[0]) / (hi[0] - lo[0]);
+  const r = Math.round(lo[1] + t * (hi[1] - lo[1]));
+  const g = Math.round(lo[2] + t * (hi[2] - lo[2]));
+  const b = Math.round(lo[3] + t * (hi[3] - lo[3]));
+  return `rgb(${r},${g},${b})`;
+}
+
+/** Build popup HTML for a region */
+function buildPopup(r) {
+  const fmtNum = (v, d = 0) => v !== null && v !== undefined ? fmt(v, d) : '—';
+  return `
+    <div class="map-popup-title">${r.region_name} <span style="font-size:.6rem;opacity:.6">${r.region_code}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Ano</span><span class="map-popup-val">${r.year}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">População</span><span class="map-popup-val">${r.population ? fmtNum(r.population) : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Área</span><span class="map-popup-val">${r.area_km2 ? fmtNum(r.area_km2, 1) + ' km²' : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Densidade</span><span class="map-popup-val">${r.population_density ? fmtNum(r.population_density, 1) + ' /km²' : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Natalidade</span><span class="map-popup-val">${r.birth_rate ? fmtNum(r.birth_rate, 1) + ' ‰' : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Mortalidade</span><span class="map-popup-val">${r.death_rate ? fmtNum(r.death_rate, 1) + ' ‰' : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">Desemprego</span><span class="map-popup-val">${r.unemployment_rate ? fmtNum(r.unemployment_rate, 1) + ' %' : '—'}</span></div>
+    <div class="map-popup-row"><span class="map-popup-key">PIB per capita</span><span class="map-popup-val">${r.gdp_per_capita_eur ? fmtNum(r.gdp_per_capita_eur, 0) + ' €' : '—'}</span></div>
+  `;
+}
+
+/** Render / refresh circle markers on the map */
+function renderMapMarkers() {
+  if (!_map || !_mapData.length) return;
+
+  // Remove existing SVG overlay layers (CircleMarkers)
+  _map.eachLayer(layer => {
+    if (layer instanceof L.CircleMarker) _map.removeLayer(layer);
+  });
+
+  const layer = _mapLayer;
+  const values = _mapData.map(r => {
+    if (layer === 'population')   return r.population || 0;
+    if (layer === 'density')      return r.population_density || 0;
+    if (layer === 'unemployment') return r.unemployment_rate || 0;
+    if (layer === 'gdp')          return r.gdp_per_capita_eur || 0;
+    return 0;
+  }).filter(v => v > 0);
+
+  if (!values.length) return;
+
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+
+  _mapData.forEach(r => {
+    if (r.lat == null || r.lng == null) return;
+
+    const rawVal = layer === 'population'   ? r.population
+                 : layer === 'density'      ? r.population_density
+                 : layer === 'unemployment' ? r.unemployment_rate
+                 : layer === 'gdp'          ? r.gdp_per_capita_eur
+                 : null;
+
+    if (rawVal == null) return;
+
+    const ratio = maxV > minV ? (rawVal - minV) / (maxV - minV) : 0.5;
+    // For GDP, invert ratio (higher GDP = better → cyan)
+    const colourRatio = layer === 'gdp' ? 1 - ratio : ratio;
+    const colour = mapColour(colourRatio);
+
+    // Radius: 10–40px scaled to value
+    const radius = 10 + ratio * 30;
+
+    const marker = L.circleMarker([r.lat, r.lng], {
+      radius,
+      fillColor:   colour,
+      fillOpacity: 0.45,
+      color:       colour,
+      weight:      2,
+      opacity:     0.9,
+    });
+
+    marker.bindPopup(buildPopup(r), { maxWidth: 260, minWidth: 220 });
+    marker.bindTooltip(
+      `<span style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#00d4ff">${r.region_name}</span>`,
+      { direction: 'top', offset: [0, -radius], className: 'map-tooltip' }
+    );
+    marker.addTo(_map);
+  });
+
+  updateMapLegend(layer, minV, maxV);
+}
+
+/** Update the legend strip below the map */
+function updateMapLegend(layer, minV, maxV) {
+  const el = document.getElementById('map-legend');
+  if (!el) return;
+
+  const LABELS = {
+    population:   { title: 'População', unit: '',  fmt: v => fmt(v, 0) },
+    density:      { title: 'Densidade', unit: ' /km²', fmt: v => fmt(v, 1) },
+    unemployment: { title: 'Desemprego', unit: ' %', fmt: v => fmt(v, 1) },
+    gdp:          { title: 'PIB pc', unit: ' €', fmt: v => fmt(v, 0) },
+  };
+  const lbl = LABELS[layer] || { title: layer, unit: '', fmt: v => v };
+
+  // Build gradient CSS matching the colour ramp (inverted for GDP)
+  const isGdp = layer === 'gdp';
+  const gradStart = isGdp ? mapColour(1) : mapColour(0);
+  const gradMid   = isGdp ? mapColour(0.5) : mapColour(0.5);
+  const gradEnd   = isGdp ? mapColour(0) : mapColour(1);
+
+  el.innerHTML = `
+    <span class="map-legend-title">${lbl.title}</span>
+    <div class="map-legend-scale">
+      <span class="map-legend-min">${lbl.fmt(minV)}${lbl.unit}</span>
+      <div class="map-legend-gradient" style="background:linear-gradient(90deg,${gradStart},${gradMid},${gradEnd})"></div>
+      <span class="map-legend-max">${lbl.fmt(maxV)}${lbl.unit}</span>
+    </div>
+    <div class="map-legend-size-row">
+      <span style="opacity:.6">Tamanho ∝ valor</span>
+      <span class="map-legend-bubble" style="width:10px;height:10px;color:var(--cyan-dim)"></span>
+      <span class="map-legend-bubble" style="width:18px;height:18px;color:var(--cyan)"></span>
+      <span class="map-legend-bubble" style="width:28px;height:28px;color:var(--cyan)"></span>
+    </div>
+  `;
+}
+
+async function loadMap() {
+  const mapEl = document.getElementById('portugal-map');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  try {
+    const res = await fetch('/api/map-data');
+    if (!res.ok) throw new Error(res.statusText);
+    _mapData = await res.json();
+
+    if (!_mapData.length) return;
+
+    // Initialise Leaflet map only once
+    if (!_map) {
+      _map = L.map('portugal-map', {
+        center: [39.5, -8.0],
+        zoom: 6,
+        zoomControl: true,
+        attributionControl: true,
+      });
+
+      // OpenStreetMap tile layer (dark cyberpunk look via CSS filter on the tile pane)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+      }).addTo(_map);
+    }
+
+    renderMapMarkers();
+
+    // Layer toggle buttons
+    document.querySelectorAll('.map-layer-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.map-layer-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        _mapLayer = btn.dataset.layer;
+        renderMapMarkers();
+      });
+    });
+
+  } catch (err) {
+    console.error('Map error:', err);
+    showToast('⚠ Erro ao carregar mapa interativo');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Regional
 // ---------------------------------------------------------------------------
 let regPopChart, regGdpChart;
@@ -504,7 +696,7 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
     const results = await res.json();
     const ok = results.every(r => r.status === 'success');
     showToast(ok ? '✅ Dados sincronizados com sucesso' : '⚠ Sincronização parcial — ver log');
-    await Promise.all([loadDemographics(), loadRegional(), loadFinancial(), loadPolitical(), loadImportLog()]);
+    await Promise.all([loadMap(), loadDemographics(), loadRegional(), loadFinancial(), loadPolitical(), loadImportLog()]);
   } catch (err) {
     showToast('❌ Erro na sincronização: ' + err.message);
   } finally {
@@ -518,6 +710,7 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
 // ---------------------------------------------------------------------------
 (async () => {
   await Promise.all([
+    loadMap(),
     loadDemographics(),
     loadRegional(),
     loadFinancial(),
