@@ -237,6 +237,53 @@
     </section>
 
     <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: COMPRAS DE DÍVIDA                            -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-debt-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">📊</div>
+        <h2 id="sec-debt-title" class="section-title" style="color:var(--green)">Compras de Dívida Pública</h2>
+        <div class="section-line" style="background:linear-gradient(90deg,var(--green),transparent)"></div>
+        <span class="section-badge" style="border-color:var(--green);color:var(--green)">IGCP</span>
+      </div>
+
+      <!-- Chart -->
+      <div class="charts-grid" style="margin-bottom:1rem">
+        <div class="chart-wrap">
+          <div class="chart-title">EMISSÕES POR INSTRUMENTO (B€)</div>
+          <div style="height:220px">
+            <canvas id="chart-debt-purchases" aria-label="Gráfico de emissões de dívida por instrumento"></canvas>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-title">TAXA DE JURO MÉDIA NA EMISSÃO (%)</div>
+          <div style="height:220px">
+            <canvas id="chart-debt-yield" aria-label="Gráfico de taxa de juro média na emissão"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="chart-wrap">
+        <table class="log-table" aria-label="Compras e emissões de dívida pública">
+          <thead>
+            <tr>
+              <th>Ano</th>
+              <th>Instrumento</th>
+              <th>Montante (B€)</th>
+              <th>Maturidade Média (anos)</th>
+              <th>Taxa de Juro (%)</th>
+              <th>Principal Comprador</th>
+            </tr>
+          </thead>
+          <tbody id="debt-tbody">
+            <tr><td colspan="6" class="skeleton"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
     <!-- SECÇÃO: LOG DE IMPORTAÇÕES                           -->
     <!-- ─────────────────────────────────────────────────── -->
     <section aria-labelledby="sec-log-title">
@@ -269,7 +316,7 @@
 
   <!-- ===== FOOTER ===== -->
   <footer>
-    <p>PAINEL DE CONTROLO DA NAÇÃO · DADOS: INE · BANCO DE PORTUGAL · DATA.GOV.PT · ASSEMBLEIA DA REPÚBLICA</p>
+    <p>PAINEL DE CONTROLO DA NAÇÃO · DADOS: INE · BANCO DE PORTUGAL · IGCP · DATA.GOV.PT · ASSEMBLEIA DA REPÚBLICA</p>
   </footer>
 
 </div><!-- .app-wrapper -->

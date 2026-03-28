@@ -5,6 +5,7 @@ Tables:
   - DemographicData  : population, density, life expectancy, age distribution
   - FinancialData    : GDP, GDP per capita, unemployment, inflation, public debt
   - PoliticalData    : official name, capital, government type, president, PM
+  - DebtPurchase     : annual public debt issuances / purchases by instrument
   - DataSource       : registry of import sources (extensible)
   - ImportLog        : audit log for every import run
 """
@@ -110,6 +111,35 @@ class PoliticalData(db.Model):
             "parliament_seats": self.parliament_seats,
             "eu_member_since": self.eu_member_since,
             "nato_member": self.nato_member,
+            "source": self.source,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class DebtPurchase(db.Model):
+    """Annual public-debt issuances / purchases broken down by instrument."""
+
+    __tablename__ = "debt_purchase"
+
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, nullable=False, index=True)
+    instrument = db.Column(db.String(20), nullable=False)  # OT, BT, OTRV, …
+    amount_eur_bn = db.Column(db.Float)                    # € billions issued
+    maturity_years = db.Column(db.Float)                   # average maturity (yrs)
+    avg_yield_pct = db.Column(db.Float)                    # average yield at issuance (%)
+    purchaser_type = db.Column(db.String(100))             # main buyer category
+    source = db.Column(db.String(200))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "year": self.year,
+            "instrument": self.instrument,
+            "amount_eur_bn": self.amount_eur_bn,
+            "maturity_years": self.maturity_years,
+            "avg_yield_pct": self.avg_yield_pct,
+            "purchaser_type": self.purchaser_type,
             "source": self.source,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

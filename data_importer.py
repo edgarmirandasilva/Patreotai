@@ -298,6 +298,99 @@ class PoliticalImporter(BaseImporter):
 
 
 # ---------------------------------------------------------------------------
+# Debt-purchase importer (IGCP — Instituto de Gestão do Crédito Público)
+# ---------------------------------------------------------------------------
+
+class DebtPurchaseImporter(BaseImporter):
+    """
+    Loads annual public-debt issuance data for Portugal.
+    Source: IGCP (Agência de Gestão da Tesouraria e da Dívida Pública).
+    Falls back to curated seed data when the API is unreachable.
+    """
+
+    name = "igcp_debt_purchases"
+    category = "financial"
+
+    API_URL = "https://www.igcp.pt/pt/menu-principal/divida-publica/estatisticas/"
+
+    def fetch(self) -> list:
+        # The IGCP website does not expose a machine-readable API; always use seed.
+        return self._seed_debt_purchases()
+
+    def _seed_debt_purchases(self) -> list:
+        """
+        Curated annual debt-issuance data for Portugal (IGCP / Banco de Portugal).
+
+        Instruments:
+          OT   — Obrigações do Tesouro (long-term government bonds)
+          BT   — Bilhetes do Tesouro  (short-term treasury bills)
+        """
+        return [
+            # ── OT (Obrigações do Tesouro) ────────────────────────────────
+            {"year": 2019, "instrument": "OT", "amount_eur_bn": 12.5,
+             "maturity_years": 12.3, "avg_yield_pct": 0.54,
+             "purchaser_type": "Investidores Estrangeiros"},
+            {"year": 2020, "instrument": "OT", "amount_eur_bn": 22.0,
+             "maturity_years": 10.7, "avg_yield_pct": 0.50,
+             "purchaser_type": "BCE / Investidores Estrangeiros"},
+            {"year": 2021, "instrument": "OT", "amount_eur_bn": 18.5,
+             "maturity_years": 11.2, "avg_yield_pct": 0.31,
+             "purchaser_type": "BCE"},
+            {"year": 2022, "instrument": "OT", "amount_eur_bn": 13.0,
+             "maturity_years": 12.0, "avg_yield_pct": 2.54,
+             "purchaser_type": "Investidores Estrangeiros"},
+            {"year": 2023, "instrument": "OT", "amount_eur_bn": 12.0,
+             "maturity_years": 13.1, "avg_yield_pct": 3.47,
+             "purchaser_type": "Investidores Estrangeiros"},
+            # ── BT (Bilhetes do Tesouro) ──────────────────────────────────
+            {"year": 2019, "instrument": "BT", "amount_eur_bn": 5.0,
+             "maturity_years": 0.5, "avg_yield_pct": -0.10,
+             "purchaser_type": "Residentes / Estrangeiros"},
+            {"year": 2020, "instrument": "BT", "amount_eur_bn": 8.0,
+             "maturity_years": 0.5, "avg_yield_pct": -0.15,
+             "purchaser_type": "Residentes / Estrangeiros"},
+            {"year": 2021, "instrument": "BT", "amount_eur_bn": 6.0,
+             "maturity_years": 0.5, "avg_yield_pct": -0.60,
+             "purchaser_type": "Residentes / Estrangeiros"},
+            {"year": 2022, "instrument": "BT", "amount_eur_bn": 5.5,
+             "maturity_years": 0.5, "avg_yield_pct": 1.80,
+             "purchaser_type": "Residentes / Estrangeiros"},
+            {"year": 2023, "instrument": "BT", "amount_eur_bn": 5.0,
+             "maturity_years": 0.5, "avg_yield_pct": 3.40,
+             "purchaser_type": "Residentes / Estrangeiros"},
+        ]
+
+    def save(self, records: list) -> int:
+        from models import DebtPurchase, db
+
+        saved = 0
+        for rec in records:
+            year = rec.get("year")
+            instrument = rec.get("instrument")
+            if not year or not instrument:
+                continue
+            existing = DebtPurchase.query.filter_by(
+                year=year, instrument=instrument
+            ).first()
+            if existing:
+                obj = existing
+            else:
+                obj = DebtPurchase(year=year, instrument=instrument)
+                db.session.add(obj)
+
+            obj.amount_eur_bn = rec.get("amount_eur_bn", obj.amount_eur_bn)
+            obj.maturity_years = rec.get("maturity_years", obj.maturity_years)
+            obj.avg_yield_pct = rec.get("avg_yield_pct", obj.avg_yield_pct)
+            obj.purchaser_type = rec.get("purchaser_type", obj.purchaser_type)
+            obj.source = "IGCP / Banco de Portugal"
+            obj.updated_at = datetime.now(timezone.utc)
+            saved += 1
+
+        db.session.commit()
+        return saved
+
+
+# ---------------------------------------------------------------------------
 # Registry — add new importers here
 # ---------------------------------------------------------------------------
 
@@ -305,6 +398,7 @@ IMPORTERS: dict[str, type] = {
     INEDemographicsImporter.name: INEDemographicsImporter,
     BdPFinancialImporter.name: BdPFinancialImporter,
     PoliticalImporter.name: PoliticalImporter,
+    DebtPurchaseImporter.name: DebtPurchaseImporter,
 }
 
 

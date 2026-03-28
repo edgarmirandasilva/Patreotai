@@ -18,6 +18,7 @@ from flask import Flask, jsonify, render_template, request
 
 from models import (
     DataSource,
+    DebtPurchase,
     DemographicData,
     FinancialData,
     ImportLog,
@@ -122,6 +123,17 @@ def create_app(config: dict | None = None) -> Flask:
         results = run_importers(source=source, app=app)
         return jsonify(results)
 
+    # --- Debt purchases --------------------------------------------------
+
+    @app.route("/api/debt-purchases")
+    def api_debt_purchases():
+        rows = (
+            DebtPurchase.query.order_by(
+                DebtPurchase.year.asc(), DebtPurchase.instrument.asc()
+            ).all()
+        )
+        return jsonify([r.to_dict() for r in rows])
+
     # --- Data sources ----------------------------------------------------
 
     @app.route("/api/sources")
@@ -157,6 +169,12 @@ def _bootstrap_data_sources():
             "description": "Dados políticos (curados)",
             "category": "political",
         },
+        {
+            "name": "igcp_debt_purchases",
+            "base_url": "https://www.igcp.pt/",
+            "description": "IGCP — Compras e emissões de dívida pública",
+            "category": "financial",
+        },
     ]
     for d in defaults:
         if not DataSource.query.filter_by(name=d["name"]).first():
@@ -166,7 +184,11 @@ def _bootstrap_data_sources():
 
 def _seed_if_empty():
     """Run importers once if the DB has no data yet."""
-    if DemographicData.query.count() == 0 or FinancialData.query.count() == 0:
+    if (
+        DemographicData.query.count() == 0
+        or FinancialData.query.count() == 0
+        or DebtPurchase.query.count() == 0
+    ):
         from data_importer import run_importers
 
         run_importers()
