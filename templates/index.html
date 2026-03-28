@@ -95,55 +95,42 @@
 
       </div>
 
-      <!-- Canal Parlamento live stream -->
-      <div class="parl-canal-wrap">
-        <div class="parl-canal-header">
-          <span class="parl-live-dot" aria-hidden="true"></span>
-          <span class="parl-live-label">LIVE</span>
-          <span class="parl-canal-title">CANAL PARLAMENTO</span>
-          <a href="https://canal.parlamento.pt/" target="_blank" rel="noopener noreferrer" class="parl-canal-ext" aria-label="Abrir Canal Parlamento em nova janela">↗</a>
+      <!-- Canais em Direto -->
+      <div class="canais-section">
+        <div class="canais-section-header">
+          <span class="canais-section-icon" aria-hidden="true">📺</span>
+          <span class="canais-section-title">CANAIS EM DIRETO</span>
+          <div class="canais-section-line"></div>
         </div>
-        <div class="parl-canal-box">
-          <iframe
-            src="https://www.youtube.com/embed/live_stream?channel=UCZ9_DYBdVw88b-OCrOMKovw&autoplay=1&mute=1"
-            title="Canal Parlamento — Transmissão em direto"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowfullscreen
-            loading="lazy"
-            class="parl-canal-iframe"
-          ></iframe>
-          <div class="parl-canal-fallback" aria-hidden="true">
-            <a href="https://canal.parlamento.pt/" target="_blank" rel="noopener noreferrer">
-              <span>📺</span>
-              <span>Ver Canal Parlamento</span>
-            </a>
-          </div>
-        </div>
-      </div>
 
-      <!-- ARTV live stream -->
-      <div class="artv-wrap">
-        <div class="artv-header">
-          <span class="artv-live-dot" aria-hidden="true"></span>
-          <span class="artv-live-label">LIVE</span>
-          <span class="artv-title">ARTV</span>
-          <a href="https://artv.pt/" target="_blank" rel="noopener noreferrer" class="artv-ext" aria-label="Abrir ARTV em nova janela">↗</a>
-        </div>
-        <div class="artv-box">
-          <video
-            id="artv-player"
-            class="artv-video"
-            muted
-            autoplay
-            playsinline
-            aria-label="ARTV — Transmissão em direto"
-          ></video>
-          <div class="artv-fallback" id="artv-fallback" aria-hidden="true">
-            <a href="https://artv.pt/" target="_blank" rel="noopener noreferrer">
-              <span>📺</span>
-              <span>Ver ARTV</span>
-            </a>
+        <div class="canais-grid">
+
+          <!-- ARTV live stream -->
+          <div class="canal-wrap" id="canal-artv">
+            <div class="canal-header">
+              <span class="canal-live-dot" aria-hidden="true"></span>
+              <span class="canal-live-label">LIVE</span>
+              <span class="canal-title">ARTV</span>
+              <a href="https://artv.pt/" target="_blank" rel="noopener noreferrer" class="canal-ext" aria-label="Abrir ARTV em nova janela">↗</a>
+            </div>
+            <div class="canal-box">
+              <video
+                id="artv-player"
+                class="canal-video"
+                muted
+                autoplay
+                playsinline
+                aria-label="ARTV — Transmissão em direto"
+              ></video>
+              <div class="canal-fallback" id="artv-fallback" aria-hidden="true">
+                <a href="https://artv.pt/" target="_blank" rel="noopener noreferrer">
+                  <span>📺</span>
+                  <span>Ver ARTV</span>
+                </a>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
