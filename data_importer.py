@@ -311,6 +311,7 @@ class DebtPurchaseImporter(BaseImporter):
     name = "igcp_debt_purchases"
     category = "financial"
 
+    # IGCP website does not expose a machine-readable API; reserved for future implementation.
     API_URL = "https://www.igcp.pt/pt/menu-principal/divida-publica/estatisticas/"
 
     def fetch(self) -> list:

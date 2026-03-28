@@ -332,7 +332,7 @@ async function loadDebtPurchases() {
     const years = [...new Set(records.map(r => r.year))].sort((a, b) => a - b);
     const instruments = [...new Set(records.map(r => r.instrument))].sort();
 
-    const INSTR_COLORS = { OT: ORANGE, BT: CYAN, OTRV: GREEN, MTN: PURPLE };
+    const INSTR_COLORS = { OT: ORANGE, BT: CYAN };
 
     // Bar chart: amount by year per instrument
     const purchasesCtx = document.getElementById('chart-debt-purchases');
