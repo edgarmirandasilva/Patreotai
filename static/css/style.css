@@ -412,6 +412,91 @@ canvas { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
+/* ---- Gender breakdown ------------------------------------ */
+.gender-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: .5rem;
+}
+
+.gender-card {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.gender-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.gender-label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--text-dim);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.gender-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gender-bar-wrap {
+  height: 6px;
+  background: rgba(255,255,255,.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gender-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .8s ease;
+}
+
+.gender-bar-male   { background: var(--cyan);   box-shadow: 0 0 6px var(--cyan); }
+.gender-bar-female { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+
+.gender-pct {
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  color: var(--text-mid);
+}
+
+/* ---- Regional table -------------------------------------- */
+.regional-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+}
+
+.regional-table th {
+  text-align: left;
+  padding: .5rem .75rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+.regional-table td {
+  padding: .45rem .75rem;
+  border-bottom: 1px solid rgba(26,42,74,.5);
+  color: var(--text-mid);
+}
+
+.regional-table tr:hover td { background: rgba(0,255,136,.03); }
+
 /* ---- Import log ------------------------------------------ */
 .log-table {
   width: 100%;

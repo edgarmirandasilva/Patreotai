@@ -119,9 +119,67 @@
         <div class="stat-card" style="--card-accent:var(--purple)">
           <div class="card-label">Esperança de Vida</div>
           <div class="card-value" id="dem-life">…</div>
-          <div class="card-sub">Média nacional</div>
+          <div class="card-sub" id="dem-life-gender">Média nacional</div>
         </div>
 
+        <div class="stat-card" style="--card-accent:var(--cyan)">
+          <div class="card-label">Idade Mediana</div>
+          <div class="card-value" id="dem-median-age">…</div>
+          <div class="card-sub">Anos</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--orange)">
+          <div class="card-label">Taxa de Fertilidade</div>
+          <div class="card-value" id="dem-fertility">…</div>
+          <div class="card-sub">Filhos por mulher</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--red)">
+          <div class="card-label">Mortalidade Infantil</div>
+          <div class="card-value" id="dem-infant-mortality">…</div>
+          <div class="card-sub">Por 1 000 nados-vivos</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--green)">
+          <div class="card-label">Migração Líquida</div>
+          <div class="card-value" id="dem-net-migration">…</div>
+          <div class="card-sub">Entradas líquidas/ano</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--purple)">
+          <div class="card-label">Taxa de Urbanização</div>
+          <div class="card-value" id="dem-urbanization">…</div>
+          <div class="card-sub">% população urbana</div>
+        </div>
+
+      </div>
+
+      <!-- Gender breakdown -->
+      <div class="chart-wrap" style="margin-bottom:1rem">
+        <div class="chart-title">DISTRIBUIÇÃO POR SEXO</div>
+        <div class="gender-grid" role="list" aria-label="Distribuição da população por sexo">
+
+          <div class="gender-card" role="listitem">
+            <div class="gender-icon" aria-hidden="true">♂</div>
+            <div class="gender-label">Masculino</div>
+            <div class="gender-value" id="dem-male-pop">…</div>
+            <div class="gender-bar-wrap">
+              <div class="gender-bar-fill gender-bar-male" id="dem-male-bar" style="width:0%"></div>
+            </div>
+            <div class="gender-pct" id="dem-male-pct">—</div>
+          </div>
+
+          <div class="gender-card" role="listitem">
+            <div class="gender-icon" aria-hidden="true">♀</div>
+            <div class="gender-label">Feminino</div>
+            <div class="gender-value" id="dem-female-pop">…</div>
+            <div class="gender-bar-wrap">
+              <div class="gender-bar-fill gender-bar-female" id="dem-female-bar" style="width:0%"></div>
+            </div>
+            <div class="gender-pct" id="dem-female-pct">—</div>
+          </div>
+
+        </div>
       </div>
 
       <!-- Age distribution -->
@@ -168,6 +226,55 @@
           <div class="chart-title">NATALIDADE VS MORTALIDADE (‰)</div>
           <div style="height:200px">
             <canvas id="chart-rates" aria-label="Gráfico de natalidade e mortalidade"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: DADOS REGIONAIS                              -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-reg-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">🗺</div>
+        <h2 id="sec-reg-title" class="section-title" style="color:var(--green)">Dados Regionais (NUTs II)</h2>
+        <div class="section-line" style="background:linear-gradient(90deg,var(--green),transparent)"></div>
+        <span class="section-badge" style="border-color:var(--green);color:var(--green)" id="reg-year">REG</span>
+      </div>
+
+      <div class="chart-wrap">
+        <table class="regional-table" aria-label="Dados demográficos e económicos por região">
+          <thead>
+            <tr>
+              <th>Região</th>
+              <th>Cód.</th>
+              <th>População</th>
+              <th>Área (km²)</th>
+              <th>Densidade (/km²)</th>
+              <th>Natalidade (‰)</th>
+              <th>Mortalidade (‰)</th>
+              <th>Desemprego (%)</th>
+              <th>PIB pc (€)</th>
+            </tr>
+          </thead>
+          <tbody id="reg-tbody">
+            <tr><td colspan="9" class="skeleton"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Regional charts -->
+      <div class="charts-grid" style="margin-top:1rem">
+        <div class="chart-wrap">
+          <div class="chart-title">POPULAÇÃO POR REGIÃO</div>
+          <div style="height:220px">
+            <canvas id="chart-reg-population" aria-label="Gráfico de população por região"></canvas>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-title">PIB PER CAPITA POR REGIÃO (€)</div>
+          <div style="height:220px">
+            <canvas id="chart-reg-gdp" aria-label="Gráfico de PIB per capita por região"></canvas>
           </div>
         </div>
       </div>
