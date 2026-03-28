@@ -19,6 +19,7 @@ from flask import Flask, jsonify, render_template, request
 
 from models import (
     DataSource,
+    DebtPurchase,
     DemographicData,
     FinancialData,
     ImportLog,
@@ -141,6 +142,17 @@ def create_app(config: dict | None = None) -> Flask:
         results = run_importers(source=source, app=app)
         return jsonify(results)
 
+    # --- Debt purchases --------------------------------------------------
+
+    @app.route("/api/debt-purchases")
+    def api_debt_purchases():
+        rows = (
+            DebtPurchase.query.order_by(
+                DebtPurchase.year.asc(), DebtPurchase.instrument.asc()
+            ).all()
+        )
+        return jsonify([r.to_dict() for r in rows])
+
     # --- Data sources ----------------------------------------------------
 
     @app.route("/api/sources")
@@ -181,6 +193,12 @@ def _bootstrap_data_sources():
             "base_url": "https://www.presidencia.pt",
             "description": "Dados políticos (curados)",
             "category": "political",
+        },
+        {
+            "name": "igcp_debt_purchases",
+            "base_url": "https://www.igcp.pt/",
+            "description": "IGCP — Compras e emissões de dívida pública",
+            "category": "financial",
         },
     ]
     for d in defaults:

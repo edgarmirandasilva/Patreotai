@@ -413,6 +413,85 @@ async function loadImportLog() {
 }
 
 // ---------------------------------------------------------------------------
+// Debt purchases
+// ---------------------------------------------------------------------------
+let debtPurchasesChart, debtYieldChart;
+
+async function loadDebtPurchases() {
+  try {
+    const res = await fetch('/api/debt-purchases');
+    if (!res.ok) throw new Error(res.statusText);
+    const records = await res.json();
+
+    // ── Table ────────────────────────────────────────────────────────────
+    const tbody = document.getElementById('debt-tbody');
+    if (tbody) {
+      if (!records.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);text-align:center">Sem registos.</td></tr>';
+      } else {
+        tbody.innerHTML = records.map(r => `<tr>
+          <td>${r.year}</td>
+          <td><span class="badge badge-success">${r.instrument}</span></td>
+          <td>${r.amount_eur_bn !== null ? fmt(r.amount_eur_bn, 1) + ' B€' : '—'}</td>
+          <td>${r.maturity_years !== null ? fmt(r.maturity_years, 1) : '—'}</td>
+          <td>${r.avg_yield_pct !== null ? fmt(r.avg_yield_pct, 2) + ' %' : '—'}</td>
+          <td>${r.purchaser_type || '—'}</td>
+        </tr>`).join('');
+      }
+    }
+
+    // ── Charts ───────────────────────────────────────────────────────────
+    // Collect unique years and instruments
+    const years = [...new Set(records.map(r => r.year))].sort((a, b) => a - b);
+    const instruments = [...new Set(records.map(r => r.instrument))].sort();
+
+    const INSTR_COLORS = { OT: ORANGE, BT: CYAN };
+
+    // Bar chart: amount by year per instrument
+    const purchasesCtx = document.getElementById('chart-debt-purchases');
+    if (purchasesCtx) {
+      if (debtPurchasesChart) debtPurchasesChart.destroy();
+      const datasets = instruments.map(inst => {
+        const color = INSTR_COLORS[inst] || RED;
+        const data = years.map(yr => {
+          const row = records.find(r => r.year === yr && r.instrument === inst);
+          return row ? row.amount_eur_bn : null;
+        });
+        return barDataset(inst, data, color);
+      });
+      debtPurchasesChart = new Chart(purchasesCtx, {
+        type: 'bar',
+        data: { labels: years, datasets },
+        options: chartOptions('B€'),
+      });
+    }
+
+    // Line chart: avg yield by year per instrument
+    const yieldCtx = document.getElementById('chart-debt-yield');
+    if (yieldCtx) {
+      if (debtYieldChart) debtYieldChart.destroy();
+      const datasets = instruments.map(inst => {
+        const color = INSTR_COLORS[inst] || RED;
+        const data = years.map(yr => {
+          const row = records.find(r => r.year === yr && r.instrument === inst);
+          return row ? row.avg_yield_pct : null;
+        });
+        return lineDataset(inst, data, color);
+      });
+      debtYieldChart = new Chart(yieldCtx, {
+        type: 'line',
+        data: { labels: years, datasets },
+        options: chartOptions('%'),
+      });
+    }
+
+  } catch (err) {
+    console.error('Debt purchases error:', err);
+    showToast('⚠ Erro ao carregar dados de compras de dívida');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Sync button
 // ---------------------------------------------------------------------------
 document.getElementById('btn-sync')?.addEventListener('click', async () => {
@@ -444,5 +523,6 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
     loadFinancial(),
     loadPolitical(),
     loadImportLog(),
+    loadDebtPurchases(),
   ]);
 })();
