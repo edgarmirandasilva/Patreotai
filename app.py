@@ -6,6 +6,7 @@ Flask application factory + routes.
 Routes:
   GET  /                         → dashboard (index.html)
   GET  /api/demographics         → latest + historical demographic data
+  GET  /api/regional             → regional demographic data (NUTs II)
   GET  /api/financial            → latest + historical financial data
   GET  /api/political            → current political data
   GET  /api/import-logs          → last N import log entries
@@ -22,6 +23,7 @@ from models import (
     FinancialData,
     ImportLog,
     PoliticalData,
+    RegionalData,
     db,
 )
 
@@ -79,6 +81,23 @@ def create_app(config: dict | None = None) -> Flask:
                 "history": [r.to_dict() for r in rows],
             }
         )
+
+    # --- Regional -------------------------------------------------------
+
+    @app.route("/api/regional")
+    def api_regional():
+        year = request.args.get("year", type=int)
+        query = RegionalData.query.order_by(
+            RegionalData.year.desc(), RegionalData.region_name.asc()
+        )
+        if year:
+            query = query.filter_by(year=year)
+        rows = query.all()
+        # Default: return only the most recent year if no year filter
+        if not year and rows:
+            latest_year = rows[0].year
+            rows = [r for r in rows if r.year == latest_year]
+        return jsonify([r.to_dict() for r in rows])
 
     # --- Financial -------------------------------------------------------
 
@@ -146,6 +165,12 @@ def _bootstrap_data_sources():
             "category": "demographic",
         },
         {
+            "name": "ine_regional",
+            "base_url": "https://www.ine.pt/ine/json_indicador/",
+            "description": "INE — Dados regionais (NUTs II)",
+            "category": "demographic",
+        },
+        {
             "name": "bdp_financial",
             "base_url": "https://bpstat.bportugal.pt/data/v1/",
             "description": "Banco de Portugal — Indicadores financeiros",
@@ -166,7 +191,11 @@ def _bootstrap_data_sources():
 
 def _seed_if_empty():
     """Run importers once if the DB has no data yet."""
-    if DemographicData.query.count() == 0 or FinancialData.query.count() == 0:
+    if (
+        DemographicData.query.count() == 0
+        or FinancialData.query.count() == 0
+        or RegionalData.query.count() == 0
+    ):
         from data_importer import run_importers
 
         run_importers()

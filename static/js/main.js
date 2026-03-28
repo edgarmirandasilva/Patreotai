@@ -121,7 +121,31 @@ async function loadDemographics() {
     setText('dem-population', pop ? (pop / 1e6).toFixed(2) + ' M' : '—');
     setText('dem-density', latest.population_density ? fmt(latest.population_density, 1) + ' /km²' : '—');
     setText('dem-life', latest.life_expectancy ? fmt(latest.life_expectancy, 1) + ' anos' : '—');
+    // Show male/female life expectancy as subtitle
+    if (latest.life_expectancy_male && latest.life_expectancy_female) {
+      setText('dem-life-gender',
+        `♂ ${fmt(latest.life_expectancy_male, 1)} a · ♀ ${fmt(latest.life_expectancy_female, 1)} a`);
+    }
+    setText('dem-median-age', latest.median_age ? fmt(latest.median_age, 1) + ' anos' : '—');
+    setText('dem-fertility', latest.fertility_rate ? fmt(latest.fertility_rate, 2) : '—');
+    setText('dem-infant-mortality', latest.infant_mortality_rate ? fmt(latest.infant_mortality_rate, 1) + ' ‰' : '—');
+    setText('dem-net-migration', latest.net_migration
+      ? (latest.net_migration > 0 ? '+' : '') + fmt(latest.net_migration, 0)
+      : '—');
+    setText('dem-urbanization', latest.urbanization_rate ? fmt(latest.urbanization_rate, 1) + ' %' : '—');
     setText('dem-year', latest.year ? `Dados ${latest.year}` : '');
+
+    // Gender breakdown
+    if (latest.male_population && latest.female_population) {
+      setText('dem-male-pop', (latest.male_population / 1e6).toFixed(2) + ' M');
+      setText('dem-female-pop', (latest.female_population / 1e6).toFixed(2) + ' M');
+      setText('dem-male-pct', latest.male_pct ? fmt(latest.male_pct, 1) + ' %' : '—');
+      setText('dem-female-pct', latest.female_pct ? fmt(latest.female_pct, 1) + ' %' : '—');
+      const mBar = document.getElementById('dem-male-bar');
+      const fBar = document.getElementById('dem-female-bar');
+      if (mBar) { mBar.style.width = (latest.male_pct || 0) + '%'; }
+      if (fBar) { fBar.style.width = (latest.female_pct || 0) + '%'; }
+    }
 
     // Age bars
     setAgeBars(latest.age_0_14_pct, latest.age_15_64_pct, latest.age_65_plus_pct);
@@ -182,6 +206,95 @@ function setAgeBars(a, b, c) {
     }
     if (label) label.textContent = pct ? fmt(pct, 1) + ' %' : '—';
   });
+}
+
+// ---------------------------------------------------------------------------
+// Regional
+// ---------------------------------------------------------------------------
+let regPopChart, regGdpChart;
+
+async function loadRegional() {
+  try {
+    const res = await fetch('/api/regional');
+    if (!res.ok) throw new Error(res.statusText);
+    const regions = await res.json();
+
+    if (!regions.length) return;
+
+    setText('reg-year', `Dados ${regions[0].year}`);
+
+    // Table
+    const tbody = document.getElementById('reg-tbody');
+    if (tbody) {
+      tbody.innerHTML = regions.map(r => `<tr>
+        <td style="color:var(--text-primary);font-weight:600">${r.region_name}</td>
+        <td style="color:var(--text-dim)">${r.region_code}</td>
+        <td>${r.population ? fmt(r.population) : '—'}</td>
+        <td>${r.area_km2 ? fmt(r.area_km2, 1) : '—'}</td>
+        <td>${r.population_density ? fmt(r.population_density, 1) : '—'}</td>
+        <td style="color:var(--green)">${r.birth_rate ? fmt(r.birth_rate, 1) : '—'}</td>
+        <td style="color:var(--red)">${r.death_rate ? fmt(r.death_rate, 1) : '—'}</td>
+        <td style="color:var(--orange)">${r.unemployment_rate ? fmt(r.unemployment_rate, 1) + ' %' : '—'}</td>
+        <td style="color:var(--cyan)">${r.gdp_per_capita_eur ? fmt(r.gdp_per_capita_eur, 0) + ' €' : '—'}</td>
+      </tr>`).join('');
+    }
+
+    // Chart labels: abbreviate long region names for readability
+    const REGION_ABBREVIATIONS = {
+      'Área Metropolitana de Lisboa': 'AM Lisboa',
+      'Região Autónoma dos Açores':   'RA Açores',
+      'Região Autónoma da Madeira':   'RA Madeira',
+    };
+    const labels = regions.map(r => REGION_ABBREVIATIONS[r.region_name] ?? r.region_name);
+    const pops   = regions.map(r => r.population ? +(r.population / 1e6).toFixed(3) : 0);
+    const gdps   = regions.map(r => r.gdp_per_capita_eur || 0);
+
+    const CHART_COLORS = [CYAN, GREEN, ORANGE, PURPLE, RED, '#ffcc00', '#00ffcc'];
+    // Cycle colors if more regions are added in the future
+    const colors = regions.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
+
+    const regPopCtx = document.getElementById('chart-reg-population');
+    if (regPopCtx) {
+      if (regPopChart) regPopChart.destroy();
+      regPopChart = new Chart(regPopCtx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'População (M)',
+            data: pops,
+            backgroundColor: colors.map(c => c + '88'),
+            borderColor: colors,
+            borderWidth: 1,
+          }],
+        },
+        options: { ...chartOptions('Milhões'), plugins: { legend: { display: false } } },
+      });
+    }
+
+    const regGdpCtx = document.getElementById('chart-reg-gdp');
+    if (regGdpCtx) {
+      if (regGdpChart) regGdpChart.destroy();
+      regGdpChart = new Chart(regGdpCtx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'PIB per capita (€)',
+            data: gdps,
+            backgroundColor: colors.map(c => c + '88'),
+            borderColor: colors,
+            borderWidth: 1,
+          }],
+        },
+        options: { ...chartOptions('€'), plugins: { legend: { display: false } } },
+      });
+    }
+
+  } catch (err) {
+    console.error('Regional error:', err);
+    showToast('⚠ Erro ao carregar dados regionais');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +425,7 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
     const results = await res.json();
     const ok = results.every(r => r.status === 'success');
     showToast(ok ? '✅ Dados sincronizados com sucesso' : '⚠ Sincronização parcial — ver log');
-    await Promise.all([loadDemographics(), loadFinancial(), loadPolitical(), loadImportLog()]);
+    await Promise.all([loadDemographics(), loadRegional(), loadFinancial(), loadPolitical(), loadImportLog()]);
   } catch (err) {
     showToast('❌ Erro na sincronização: ' + err.message);
   } finally {
@@ -327,6 +440,7 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
 (async () => {
   await Promise.all([
     loadDemographics(),
+    loadRegional(),
     loadFinancial(),
     loadPolitical(),
     loadImportLog(),
