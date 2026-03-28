@@ -2,7 +2,9 @@
 models.py — Database models for the Painel de Controlo da Nação.
 
 Tables:
-  - DemographicData  : population, density, life expectancy, age distribution
+  - DemographicData  : population, density, life expectancy, age/gender distribution,
+                       fertility, infant mortality, migration, urbanization
+  - RegionalData     : per-region demographic indicators (NUTs II)
   - FinancialData    : GDP, GDP per capita, unemployment, inflation, public debt
   - PoliticalData    : official name, capital, government type, president, PM
   - DebtPurchase     : annual public debt issuances / purchases by instrument
@@ -24,12 +26,25 @@ class DemographicData(db.Model):
     year = db.Column(db.Integer, nullable=False, index=True)
     total_population = db.Column(db.BigInteger)
     population_density = db.Column(db.Float)          # people / km²
-    life_expectancy = db.Column(db.Float)              # years
+    life_expectancy = db.Column(db.Float)              # years (overall)
+    life_expectancy_male = db.Column(db.Float)         # years (male)
+    life_expectancy_female = db.Column(db.Float)       # years (female)
     age_0_14_pct = db.Column(db.Float)                 # % under 15
     age_15_64_pct = db.Column(db.Float)                # % 15-64
     age_65_plus_pct = db.Column(db.Float)              # % 65+
     birth_rate = db.Column(db.Float)                   # per 1 000
     death_rate = db.Column(db.Float)                   # per 1 000
+    # Gender breakdown
+    male_population = db.Column(db.BigInteger)
+    female_population = db.Column(db.BigInteger)
+    male_pct = db.Column(db.Float)                     # % male
+    female_pct = db.Column(db.Float)                   # % female
+    # Additional indicators
+    fertility_rate = db.Column(db.Float)               # children per woman
+    infant_mortality_rate = db.Column(db.Float)        # per 1 000 live births
+    net_migration = db.Column(db.Integer)              # people (+ inflow, − outflow)
+    median_age = db.Column(db.Float)                   # years
+    urbanization_rate = db.Column(db.Float)            # % urban population
     source = db.Column(db.String(200))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -40,11 +55,59 @@ class DemographicData(db.Model):
             "total_population": self.total_population,
             "population_density": self.population_density,
             "life_expectancy": self.life_expectancy,
+            "life_expectancy_male": self.life_expectancy_male,
+            "life_expectancy_female": self.life_expectancy_female,
             "age_0_14_pct": self.age_0_14_pct,
             "age_15_64_pct": self.age_15_64_pct,
             "age_65_plus_pct": self.age_65_plus_pct,
             "birth_rate": self.birth_rate,
             "death_rate": self.death_rate,
+            "male_population": self.male_population,
+            "female_population": self.female_population,
+            "male_pct": self.male_pct,
+            "female_pct": self.female_pct,
+            "fertility_rate": self.fertility_rate,
+            "infant_mortality_rate": self.infant_mortality_rate,
+            "net_migration": self.net_migration,
+            "median_age": self.median_age,
+            "urbanization_rate": self.urbanization_rate,
+            "source": self.source,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class RegionalData(db.Model):
+    """Per-region demographic and economic data (Portugal NUTs II)."""
+
+    __tablename__ = "regional_data"
+
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, nullable=False, index=True)
+    region_code = db.Column(db.String(10), nullable=False, index=True)   # e.g. PT11
+    region_name = db.Column(db.String(100), nullable=False)
+    population = db.Column(db.BigInteger)
+    area_km2 = db.Column(db.Float)
+    population_density = db.Column(db.Float)      # people / km²
+    birth_rate = db.Column(db.Float)              # per 1 000
+    death_rate = db.Column(db.Float)              # per 1 000
+    unemployment_rate = db.Column(db.Float)       # %
+    gdp_per_capita_eur = db.Column(db.Float)      # €
+    source = db.Column(db.String(200))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "year": self.year,
+            "region_code": self.region_code,
+            "region_name": self.region_name,
+            "population": self.population,
+            "area_km2": self.area_km2,
+            "population_density": self.population_density,
+            "birth_rate": self.birth_rate,
+            "death_rate": self.death_rate,
+            "unemployment_rate": self.unemployment_rate,
+            "gdp_per_capita_eur": self.gdp_per_capita_eur,
             "source": self.source,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

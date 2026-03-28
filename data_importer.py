@@ -123,20 +123,45 @@ class INEDemographicsImporter(BaseImporter):
         """Curated historical demographic data for Portugal (INE / Pordata)."""
         return [
             {"year": 2019, "total_population": 10_295_909, "population_density": 112.0,
-             "life_expectancy": 81.3, "age_0_14_pct": 13.8, "age_15_64_pct": 65.0,
-             "age_65_plus_pct": 21.2, "birth_rate": 8.5, "death_rate": 11.4},
+             "life_expectancy": 81.3, "life_expectancy_male": 78.2, "life_expectancy_female": 84.3,
+             "age_0_14_pct": 13.8, "age_15_64_pct": 65.0, "age_65_plus_pct": 21.2,
+             "birth_rate": 8.5, "death_rate": 11.4,
+             "male_population": 4_940_602, "female_population": 5_355_307,
+             "male_pct": 48.0, "female_pct": 52.0,
+             "fertility_rate": 1.42, "infant_mortality_rate": 3.1,
+             "net_migration": 37_000, "median_age": 44.9, "urbanization_rate": 65.9},
             {"year": 2020, "total_population": 10_298_252, "population_density": 112.1,
-             "life_expectancy": 80.9, "age_0_14_pct": 13.7, "age_15_64_pct": 64.7,
-             "age_65_plus_pct": 21.6, "birth_rate": 8.4, "death_rate": 12.1},
+             "life_expectancy": 80.9, "life_expectancy_male": 77.9, "life_expectancy_female": 83.8,
+             "age_0_14_pct": 13.7, "age_15_64_pct": 64.7, "age_65_plus_pct": 21.6,
+             "birth_rate": 8.4, "death_rate": 12.1,
+             "male_population": 4_941_726, "female_population": 5_356_526,
+             "male_pct": 48.0, "female_pct": 52.0,
+             "fertility_rate": 1.40, "infant_mortality_rate": 3.0,
+             "net_migration": 40_000, "median_age": 45.4, "urbanization_rate": 66.3},
             {"year": 2021, "total_population": 10_343_066, "population_density": 112.6,
-             "life_expectancy": 80.4, "age_0_14_pct": 13.8, "age_15_64_pct": 64.2,
-             "age_65_plus_pct": 22.0, "birth_rate": 8.4, "death_rate": 12.8},
+             "life_expectancy": 80.4, "life_expectancy_male": 77.4, "life_expectancy_female": 83.4,
+             "age_0_14_pct": 13.8, "age_15_64_pct": 64.2, "age_65_plus_pct": 22.0,
+             "birth_rate": 8.4, "death_rate": 12.8,
+             "male_population": 4_964_672, "female_population": 5_378_394,
+             "male_pct": 48.0, "female_pct": 52.0,
+             "fertility_rate": 1.43, "infant_mortality_rate": 3.3,
+             "net_migration": 55_000, "median_age": 45.8, "urbanization_rate": 66.6},
             {"year": 2022, "total_population": 10_467_366, "population_density": 113.9,
-             "life_expectancy": 81.0, "age_0_14_pct": 14.0, "age_15_64_pct": 63.8,
-             "age_65_plus_pct": 22.2, "birth_rate": 8.6, "death_rate": 11.9},
+             "life_expectancy": 81.0, "life_expectancy_male": 78.1, "life_expectancy_female": 83.9,
+             "age_0_14_pct": 14.0, "age_15_64_pct": 63.8, "age_65_plus_pct": 22.2,
+             "birth_rate": 8.6, "death_rate": 11.9,
+             "male_population": 5_024_336, "female_population": 5_443_030,
+             "male_pct": 48.0, "female_pct": 52.0,
+             "fertility_rate": 1.45, "infant_mortality_rate": 2.9,
+             "net_migration": 78_000, "median_age": 46.0, "urbanization_rate": 66.9},
             {"year": 2023, "total_population": 10_639_726, "population_density": 115.8,
-             "life_expectancy": 81.5, "age_0_14_pct": 14.2, "age_15_64_pct": 63.5,
-             "age_65_plus_pct": 22.3, "birth_rate": 8.5, "death_rate": 11.5},
+             "life_expectancy": 81.5, "life_expectancy_male": 78.6, "life_expectancy_female": 84.4,
+             "age_0_14_pct": 14.2, "age_15_64_pct": 63.5, "age_65_plus_pct": 22.3,
+             "birth_rate": 8.5, "death_rate": 11.5,
+             "male_population": 5_107_068, "female_population": 5_532_658,
+             "male_pct": 48.0, "female_pct": 52.0,
+             "fertility_rate": 1.38, "infant_mortality_rate": 2.7,
+             "net_migration": 91_000, "median_age": 46.3, "urbanization_rate": 67.2},
         ]
 
     def save(self, records: list) -> int:
@@ -157,11 +182,22 @@ class INEDemographicsImporter(BaseImporter):
             obj.total_population = rec.get("total_population", obj.total_population)
             obj.population_density = rec.get("population_density", obj.population_density)
             obj.life_expectancy = rec.get("life_expectancy", obj.life_expectancy)
+            obj.life_expectancy_male = rec.get("life_expectancy_male", obj.life_expectancy_male)
+            obj.life_expectancy_female = rec.get("life_expectancy_female", obj.life_expectancy_female)
             obj.age_0_14_pct = rec.get("age_0_14_pct", obj.age_0_14_pct)
             obj.age_15_64_pct = rec.get("age_15_64_pct", obj.age_15_64_pct)
             obj.age_65_plus_pct = rec.get("age_65_plus_pct", obj.age_65_plus_pct)
             obj.birth_rate = rec.get("birth_rate", obj.birth_rate)
             obj.death_rate = rec.get("death_rate", obj.death_rate)
+            obj.male_population = rec.get("male_population", obj.male_population)
+            obj.female_population = rec.get("female_population", obj.female_population)
+            obj.male_pct = rec.get("male_pct", obj.male_pct)
+            obj.female_pct = rec.get("female_pct", obj.female_pct)
+            obj.fertility_rate = rec.get("fertility_rate", obj.fertility_rate)
+            obj.infant_mortality_rate = rec.get("infant_mortality_rate", obj.infant_mortality_rate)
+            obj.net_migration = rec.get("net_migration", obj.net_migration)
+            obj.median_age = rec.get("median_age", obj.median_age)
+            obj.urbanization_rate = rec.get("urbanization_rate", obj.urbanization_rate)
             obj.source = "INE / data.gov.pt"
             obj.updated_at = datetime.now(timezone.utc)
             saved += 1
@@ -298,92 +334,84 @@ class PoliticalImporter(BaseImporter):
 
 
 # ---------------------------------------------------------------------------
-# Debt-purchase importer (IGCP — Instituto de Gestão do Crédito Público)
+# Regional importer (INE NUTs II regions, curated seed)
 # ---------------------------------------------------------------------------
 
-class DebtPurchaseImporter(BaseImporter):
-    """
-    Loads annual public-debt issuance data for Portugal.
-    Source: IGCP (Agência de Gestão da Tesouraria e da Dívida Pública).
-    Falls back to curated seed data when the API is unreachable.
-    """
+class RegionalImporter(BaseImporter):
+    """Stores curated regional demographic and economic data for Portugal (NUTs II)."""
 
-    name = "igcp_debt_purchases"
-    category = "financial"
-
-    # IGCP website does not expose a machine-readable API; reserved for future implementation.
-    API_URL = "https://www.igcp.pt/pt/menu-principal/divida-publica/estatisticas/"
+    name = "ine_regional"
+    category = "demographic"
 
     def fetch(self) -> list:
-        # The IGCP website does not expose a machine-readable API; always use seed.
-        return self._seed_debt_purchases()
+        return self._seed_regional()
 
-    def _seed_debt_purchases(self) -> list:
-        """
-        Curated annual debt-issuance data for Portugal (IGCP / Banco de Portugal).
-
-        Instruments:
-          OT   — Obrigações do Tesouro (long-term government bonds)
-          BT   — Bilhetes do Tesouro  (short-term treasury bills)
-        """
+    def _seed_regional(self) -> list:
+        """Curated 2023 data for Portugal's 7 NUTs II regions (INE / Pordata / Eurostat)."""
         return [
-            # ── OT (Obrigações do Tesouro) ────────────────────────────────
-            {"year": 2019, "instrument": "OT", "amount_eur_bn": 12.5,
-             "maturity_years": 12.3, "avg_yield_pct": 0.54,
-             "purchaser_type": "Investidores Estrangeiros"},
-            {"year": 2020, "instrument": "OT", "amount_eur_bn": 22.0,
-             "maturity_years": 10.7, "avg_yield_pct": 0.50,
-             "purchaser_type": "BCE / Investidores Estrangeiros"},
-            {"year": 2021, "instrument": "OT", "amount_eur_bn": 18.5,
-             "maturity_years": 11.2, "avg_yield_pct": 0.31,
-             "purchaser_type": "BCE"},
-            {"year": 2022, "instrument": "OT", "amount_eur_bn": 13.0,
-             "maturity_years": 12.0, "avg_yield_pct": 2.54,
-             "purchaser_type": "Investidores Estrangeiros"},
-            {"year": 2023, "instrument": "OT", "amount_eur_bn": 12.0,
-             "maturity_years": 13.1, "avg_yield_pct": 3.47,
-             "purchaser_type": "Investidores Estrangeiros"},
-            # ── BT (Bilhetes do Tesouro) ──────────────────────────────────
-            {"year": 2019, "instrument": "BT", "amount_eur_bn": 5.0,
-             "maturity_years": 0.5, "avg_yield_pct": -0.10,
-             "purchaser_type": "Residentes / Estrangeiros"},
-            {"year": 2020, "instrument": "BT", "amount_eur_bn": 8.0,
-             "maturity_years": 0.5, "avg_yield_pct": -0.15,
-             "purchaser_type": "Residentes / Estrangeiros"},
-            {"year": 2021, "instrument": "BT", "amount_eur_bn": 6.0,
-             "maturity_years": 0.5, "avg_yield_pct": -0.60,
-             "purchaser_type": "Residentes / Estrangeiros"},
-            {"year": 2022, "instrument": "BT", "amount_eur_bn": 5.5,
-             "maturity_years": 0.5, "avg_yield_pct": 1.80,
-             "purchaser_type": "Residentes / Estrangeiros"},
-            {"year": 2023, "instrument": "BT", "amount_eur_bn": 5.0,
-             "maturity_years": 0.5, "avg_yield_pct": 3.40,
-             "purchaser_type": "Residentes / Estrangeiros"},
+            # year, region_code, region_name, population, area_km2,
+            # birth_rate, death_rate, unemployment_rate, gdp_per_capita_eur
+            {"year": 2023, "region_code": "PT11", "region_name": "Norte",
+             "population": 3_597_748, "area_km2": 21_284.8,
+             "birth_rate": 8.9, "death_rate": 10.6, "unemployment_rate": 6.1,
+             "gdp_per_capita_eur": 18_500},
+            {"year": 2023, "region_code": "PT16", "region_name": "Centro",
+             "population": 2_216_569, "area_km2": 28_399.0,
+             "birth_rate": 7.6, "death_rate": 13.8, "unemployment_rate": 5.4,
+             "gdp_per_capita_eur": 17_800},
+            {"year": 2023, "region_code": "PT17", "region_name": "Área Metropolitana de Lisboa",
+             "population": 2_872_765, "area_km2": 3_015.2,
+             "birth_rate": 9.3, "death_rate": 9.2, "unemployment_rate": 7.1,
+             "gdp_per_capita_eur": 32_400},
+            {"year": 2023, "region_code": "PT18", "region_name": "Alentejo",
+             "population": 748_265, "area_km2": 31_551.2,
+             "birth_rate": 6.5, "death_rate": 15.2, "unemployment_rate": 6.8,
+             "gdp_per_capita_eur": 16_200},
+            {"year": 2023, "region_code": "PT15", "region_name": "Algarve",
+             "population": 476_443, "area_km2": 4_960.1,
+             "birth_rate": 8.1, "death_rate": 11.4, "unemployment_rate": 6.3,
+             "gdp_per_capita_eur": 20_100},
+            {"year": 2023, "region_code": "PT20", "region_name": "Região Autónoma dos Açores",
+             "population": 235_774, "area_km2": 2_322.0,
+             "birth_rate": 10.2, "death_rate": 9.8, "unemployment_rate": 9.4,
+             "gdp_per_capita_eur": 16_900},
+            {"year": 2023, "region_code": "PT30", "region_name": "Região Autónoma da Madeira",
+             "population": 252_456, "area_km2": 801.3,
+             "birth_rate": 9.0, "death_rate": 10.1, "unemployment_rate": 5.9,
+             "gdp_per_capita_eur": 19_700},
         ]
 
     def save(self, records: list) -> int:
-        from models import DebtPurchase, db
+        from models import RegionalData, db
 
         saved = 0
         for rec in records:
             year = rec.get("year")
-            instrument = rec.get("instrument")
-            if not year or not instrument:
+            region_code = rec.get("region_code")
+            if not year or not region_code:
                 continue
-            existing = DebtPurchase.query.filter_by(
-                year=year, instrument=instrument
+            existing = RegionalData.query.filter_by(
+                year=year, region_code=region_code
             ).first()
             if existing:
                 obj = existing
             else:
-                obj = DebtPurchase(year=year, instrument=instrument)
+                obj = RegionalData(year=year, region_code=region_code)
                 db.session.add(obj)
 
-            obj.amount_eur_bn = rec.get("amount_eur_bn", obj.amount_eur_bn)
-            obj.maturity_years = rec.get("maturity_years", obj.maturity_years)
-            obj.avg_yield_pct = rec.get("avg_yield_pct", obj.avg_yield_pct)
-            obj.purchaser_type = rec.get("purchaser_type", obj.purchaser_type)
-            obj.source = "IGCP / Banco de Portugal"
+            obj.region_name = rec.get("region_name", obj.region_name)
+            obj.population = rec.get("population", obj.population)
+            obj.area_km2 = rec.get("area_km2", obj.area_km2)
+            obj.population_density = (
+                rec["population"] / rec["area_km2"]
+                if rec.get("population") and rec.get("area_km2")
+                else obj.population_density
+            )
+            obj.birth_rate = rec.get("birth_rate", obj.birth_rate)
+            obj.death_rate = rec.get("death_rate", obj.death_rate)
+            obj.unemployment_rate = rec.get("unemployment_rate", obj.unemployment_rate)
+            obj.gdp_per_capita_eur = rec.get("gdp_per_capita_eur", obj.gdp_per_capita_eur)
+            obj.source = "INE / Pordata / Eurostat"
             obj.updated_at = datetime.now(timezone.utc)
             saved += 1
 
@@ -399,7 +427,7 @@ IMPORTERS: dict[str, type] = {
     INEDemographicsImporter.name: INEDemographicsImporter,
     BdPFinancialImporter.name: BdPFinancialImporter,
     PoliticalImporter.name: PoliticalImporter,
-    DebtPurchaseImporter.name: DebtPurchaseImporter,
+    RegionalImporter.name: RegionalImporter,
 }
 
 
