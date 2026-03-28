@@ -719,3 +719,38 @@ document.getElementById('btn-sync')?.addEventListener('click', async () => {
     loadDebtPurchases(),
   ]);
 })();
+
+// ---------------------------------------------------------------------------
+// ARTV HLS live stream
+// ---------------------------------------------------------------------------
+(function initArtvPlayer() {
+  const ARTV_SRC = 'https://playout172.livextend.cloud/liveiframe/_definst_/liveartvabr/playlist.m3u8';
+  const video    = document.getElementById('artv-player');
+  const fallback = document.getElementById('artv-fallback');
+  if (!video) return;
+
+  function showFallback() {
+    if (fallback) { fallback.style.zIndex = '2'; fallback.removeAttribute('aria-hidden'); }
+  }
+
+  if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+    const hls = new Hls({ liveSyncDurationCount: 3 });
+    hls.loadSource(ARTV_SRC);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.muted = true;
+      video.play().catch(() => {});
+    });
+    hls.on(Hls.Events.ERROR, (_e, data) => {
+      if (data.fatal) showFallback();
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Safari native HLS
+    video.src = ARTV_SRC;
+    video.muted = true;
+    video.play().catch(() => {});
+    video.addEventListener('error', showFallback);
+  } else {
+    showFallback();
+  }
+}());
