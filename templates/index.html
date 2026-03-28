@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Controlo da Nação — Portugal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <!-- Main JS (loaded after Chart.js) -->
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body>
+
+<!-- Scan-line visual effect -->
+<div class="scan-line" aria-hidden="true"></div>
+
+<div class="app-wrapper">
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar" role="banner">
+    <div class="topbar-brand">
+      <div class="brand-icon" aria-hidden="true">PT</div>
+      <div>
+        <div class="brand-title">Painel de Controlo</div>
+        <div class="brand-subtitle">REPÚBLICA PORTUGUESA · SISTEMA NACIONAL DE DADOS</div>
+      </div>
+    </div>
+
+    <div class="topbar-meta">
+      <div class="topbar-status" role="status" aria-label="Estado do sistema">
+        <div class="status-dot" aria-hidden="true"></div>
+        <span>SISTEMA ATIVO</span>
+      </div>
+      <div id="clock" aria-label="Relógio">--:--:--</div>
+      <button id="btn-sync" class="btn-sync" aria-label="Sincronizar dados">⟳ SINCRONIZAR</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main role="main">
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: POLÍTICA                                     -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-pol-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">🏛</div>
+        <h2 id="sec-pol-title" class="section-title" style="color:var(--orange)">Dados Políticos</h2>
+        <div class="section-line" style="background:linear-gradient(90deg,var(--orange),transparent)"></div>
+        <span class="section-badge" style="border-color:var(--orange);color:var(--orange)">GOV</span>
+      </div>
+
+      <div class="cards-grid-wide">
+
+        <div class="info-card" style="--card-accent:var(--orange)">
+          <div class="ic-label">Nome Oficial</div>
+          <div class="ic-value" id="pol-name">…</div>
+          <div class="ic-label" style="margin-top:.75rem">Capital</div>
+          <div class="ic-value" id="pol-capital">…</div>
+        </div>
+
+        <div class="info-card" style="--card-accent:var(--orange)">
+          <div class="ic-label">Forma de Governo</div>
+          <div class="ic-value" id="pol-govt">…</div>
+          <span class="ic-tag">Sistema de Governo</span>
+        </div>
+
+        <div class="info-card" style="--card-accent:var(--orange)">
+          <div class="ic-label">Presidente da República</div>
+          <div class="ic-value" id="pol-president">…</div>
+          <div class="ic-label" style="margin-top:.75rem">Primeiro-Ministro</div>
+          <div class="ic-value" id="pol-pm">…</div>
+        </div>
+
+        <div class="info-card" style="--card-accent:var(--orange)">
+          <div class="ic-label">Partido / Coligação</div>
+          <div class="ic-value" id="pol-party">…</div>
+          <div class="ic-label" style="margin-top:.75rem">Lugares na Assembleia</div>
+          <div class="ic-value" id="pol-seats">…</div>
+        </div>
+
+        <div class="info-card" style="--card-accent:var(--orange)">
+          <div class="ic-label">União Europeia</div>
+          <div class="ic-value" id="pol-eu">…</div>
+          <div class="ic-label" style="margin-top:.75rem">NATO</div>
+          <div class="ic-value" id="pol-nato">…</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: DEMOGRAFIA                                   -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-dem-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">👥</div>
+        <h2 id="sec-dem-title" class="section-title" style="color:var(--cyan)">Dados Demográficos</h2>
+        <div class="section-line"></div>
+        <span class="section-badge" style="border-color:var(--cyan);color:var(--cyan)" id="dem-year">DEM</span>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="cards-grid" style="margin-bottom:1rem">
+
+        <div class="stat-card" style="--card-accent:var(--cyan)">
+          <div class="card-label">População Total</div>
+          <div class="card-value" id="dem-population">…</div>
+          <div class="card-sub">Residentes em Portugal</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--green)">
+          <div class="card-label">Densidade Populacional</div>
+          <div class="card-value" id="dem-density">…</div>
+          <div class="card-sub">Habitantes por km²</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--purple)">
+          <div class="card-label">Esperança de Vida</div>
+          <div class="card-value" id="dem-life">…</div>
+          <div class="card-sub">Média nacional</div>
+        </div>
+
+      </div>
+
+      <!-- Age distribution -->
+      <div class="chart-wrap" style="margin-bottom:1rem">
+        <div class="chart-title">DISTRIBUIÇÃO ETÁRIA</div>
+        <div class="age-bars" role="list" aria-label="Distribuição etária da população">
+
+          <div class="age-bar-row" role="listitem">
+            <span class="age-bar-label">0–14 anos</span>
+            <div class="age-bar-track" role="progressbar" aria-label="0 a 14 anos">
+              <div class="age-bar-fill" id="age-bar-0-14" style="width:0%"></div>
+            </div>
+            <span class="age-bar-pct" id="age-bar-0-14-pct">—</span>
+          </div>
+
+          <div class="age-bar-row" role="listitem">
+            <span class="age-bar-label">15–64 anos</span>
+            <div class="age-bar-track" role="progressbar" aria-label="15 a 64 anos">
+              <div class="age-bar-fill" id="age-bar-15-64" style="width:0%"></div>
+            </div>
+            <span class="age-bar-pct" id="age-bar-15-64-pct">—</span>
+          </div>
+
+          <div class="age-bar-row" role="listitem">
+            <span class="age-bar-label">65+ anos</span>
+            <div class="age-bar-track" role="progressbar" aria-label="65 anos ou mais">
+              <div class="age-bar-fill" id="age-bar-65plus" style="width:0%"></div>
+            </div>
+            <span class="age-bar-pct" id="age-bar-65plus-pct">—</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-wrap">
+          <div class="chart-title">EVOLUÇÃO DA POPULAÇÃO</div>
+          <div style="height:200px">
+            <canvas id="chart-population" aria-label="Gráfico de evolução da população"></canvas>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-title">NATALIDADE VS MORTALIDADE (‰)</div>
+          <div style="height:200px">
+            <canvas id="chart-rates" aria-label="Gráfico de natalidade e mortalidade"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: ECONOMIA                                     -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-fin-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">💹</div>
+        <h2 id="sec-fin-title" class="section-title" style="color:var(--orange)">Dados Económicos</h2>
+        <div class="section-line" style="background:linear-gradient(90deg,var(--orange),transparent)"></div>
+        <span class="section-badge" style="border-color:var(--orange);color:var(--orange)" id="fin-year">ECO</span>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="cards-grid" style="margin-bottom:1rem">
+
+        <div class="stat-card" style="--card-accent:var(--orange)">
+          <div class="card-label">PIB Nominal</div>
+          <div class="card-value" id="fin-gdp">…</div>
+          <div class="card-sub">Mil milhões €</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--cyan)">
+          <div class="card-label">PIB per Capita</div>
+          <div class="card-value" id="fin-gdppc">…</div>
+          <div class="card-sub">Euros por habitante</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--red)">
+          <div class="card-label">Desemprego</div>
+          <div class="card-value" id="fin-unemp">…</div>
+          <div class="card-sub">Taxa de desemprego</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--purple)">
+          <div class="card-label">Inflação</div>
+          <div class="card-value" id="fin-infl">…</div>
+          <div class="card-sub">Taxa de inflação (IPC)</div>
+        </div>
+
+        <div class="stat-card" style="--card-accent:var(--green)">
+          <div class="card-label">Dívida Pública</div>
+          <div class="card-value" id="fin-debt">…</div>
+          <div class="card-sub">% do PIB</div>
+        </div>
+
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-wrap">
+          <div class="chart-title">EVOLUÇÃO DO PIB (B€)</div>
+          <div style="height:200px">
+            <canvas id="chart-gdp" aria-label="Gráfico de evolução do PIB"></canvas>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-title">DESEMPREGO E INFLAÇÃO (%)</div>
+          <div style="height:200px">
+            <canvas id="chart-unemployment" aria-label="Gráfico de desemprego e inflação"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <!-- SECÇÃO: LOG DE IMPORTAÇÕES                           -->
+    <!-- ─────────────────────────────────────────────────── -->
+    <section aria-labelledby="sec-log-title">
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">📋</div>
+        <h2 id="sec-log-title" class="section-title" style="color:var(--text-dim)">Log de Importações</h2>
+        <div class="section-line" style="background:linear-gradient(90deg,var(--border),transparent)"></div>
+        <span class="section-badge" style="border-color:var(--text-dim);color:var(--text-dim)">SYS</span>
+      </div>
+
+      <div class="chart-wrap">
+        <table class="log-table" aria-label="Histórico de importações de dados">
+          <thead>
+            <tr>
+              <th>Fonte</th>
+              <th>Estado</th>
+              <th>Registos</th>
+              <th>Mensagem</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody">
+            <tr><td colspan="5" class="skeleton"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>PAINEL DE CONTROLO DA NAÇÃO · DADOS: INE · BANCO DE PORTUGAL · DATA.GOV.PT · ASSEMBLEIA DA REPÚBLICA</p>
+  </footer>
+
+</div><!-- .app-wrapper -->
+
+<!-- Toast notification -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+</body>
+</html>
